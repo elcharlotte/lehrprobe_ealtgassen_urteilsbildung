@@ -22,8 +22,8 @@ def main():
 
     # --- PHASE 1: FRAGEBOGEN (1 ITEM) ---
     if st.session_state.step == "questionnaire":
-        st.title("Schritt 1: Das Selbstbild (Q-Daten) 📝")
-        st.write("Bitte stufen Sie sich spontan selbst ein:")
+        st.title("Schritt 1: Fragebogen 📝")
+        st.write("Bitte geben Sie an, wie sehr Sie der folgenden Aussage zustimmen:")
         
         st.session_state.self_score = st.select_slider(
             "Ich erledige Aufgaben stets gründlich und schiebe sie selten auf.",
@@ -48,7 +48,7 @@ def main():
 
     # --- PHASE 2: SHORT CHAT (MAX 2 INTERAKTIONEN) ---
     elif st.session_state.step == "chat":
-        st.title("Schritt 2: Die Verhaltensstichprobe (Interview) 💬")
+        st.title("Schritt 2: Interview 💬")
         
         # Zähle die echten User-Antworten
         user_msgs_count = len([m for m in st.session_state.messages if m["role"] == "user"])
@@ -62,7 +62,7 @@ def main():
 
         # Logik für das Ende des Chats
         if user_msgs_count >= 2:
-            st.success("Das Interview ist beendet. Die Datenbasis (Q-Daten + Interview-Transkript) ist vollständig.")
+            st.success("Das Interview ist beendet.")
             if st.button("Mechanische Urteilsbildung starten 📊", type="primary", use_container_width=True):
                 st.session_state.step = "results"
                 st.rerun()
@@ -86,7 +86,7 @@ def main():
         st.title("Schritt 3: Das Diagnostische Urteil 🧠")
         
         if "ai_verdict" not in st.session_state:
-            with st.spinner("Das LLM verrechnet die Multimethodalen Daten..."):
+            with st.spinner("Das LLM verrechnet die Daten..."):
                 try:
                     client = OpenAI(api_key=st.secrets["openai"]["api_key"])
                     chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages if m["role"] != "system"])
@@ -130,10 +130,10 @@ def main():
         
         col1, col2 = st.columns(2)
         with col1:
-            st.metric(label="Eingegebene Q-Daten (Selbstbild)", value=f"{st.session_state.self_score} / 5")
+            st.metric(label="Fragebogendaten", value=f"{st.session_state.self_score} / 5")
             st.caption(v.get("begruendung_selbstbericht", ""))
         with col2:
-            st.metric(label="Analysierte L-Daten (Interview)", value="Text-Muster")
+            st.metric(label="Interviewdaten", value="Text-Muster")
             st.caption(v.get("begruendung_interview", ""))
             
         st.divider()
