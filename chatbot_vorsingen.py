@@ -23,7 +23,7 @@ def main():
 
     # --- PHASE 1: ABITURNOTE ---
     if st.session_state.step == "abi_grade":
-        st.title("Schritt 1: Kognitive Leistung (Abiturnote) 🎓")
+        st.title("Schritt 1: Abiturnote 🎓")
         st.write("Bitte geben Sie Ihre Abschlussnote des Abiturs an:")
         
         # Nummerische Eingabe oder Slider für die Note
@@ -155,7 +155,7 @@ def main():
         
         # Gegenüberstellung der integrierten Daten
         st.divider()
-        st.subheader("Verrechnete Informationen aus der Black Box:")
+        st.subheader("Verrechnete Informationen:")
         
         # Layout angepasst auf 3 Spalten wegen der zusätzlichen Abiturnote
         col1, col2, col3 = st.columns(3)
