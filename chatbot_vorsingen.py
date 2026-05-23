@@ -98,7 +98,7 @@ def main():
                     2. Ein transkribiertes Kurz-Interview:
                     {chat_text}
                     
-                    Deine Aufgabe ist die mechanische Urteilsbildung (Prognose). Schätze die Wahrscheinlichkeit (0-100%) ein, mit der diese Person eine ihr übertragene, wichtige Aufgabe in der kommenden Woche pünktlich und fehlerfrei vollenden wird.
+                    Deine Aufgabe ist die mechanische Urteilsbildung (Prognose). Schätze die Wahrscheinlichkeit (0-100%) ein, mit der diese Person einen überdurchschnittlichen Masterabschluss für das Fach Psychologie zu erwirbt.
                     
                     Gib die Antwort AUSSCHLIESSLICH als valides JSON-Objekt mit exakt diesen drei Keys aus:
                     "prognose_prozent": (Als Integer, z.B. 75),
@@ -120,8 +120,8 @@ def main():
         v = st.session_state.ai_verdict
         prob = v.get("prognose_prozent", 50)
         
-        st.markdown(f"### Kriteriumsprognose für die kommende Woche:")
-        st.markdown(f"#### Wahrscheinlichkeit eine wichtige Aufgabe zu vollenden: **{prob}%**")
+        st.markdown(f"### Kriteriumsprognose:")
+        st.markdown(f"#### Wahrscheinlichkeit einen überdurchschnittlichen Masterabschluss zu absolvieren: **{prob}%**")
         st.progress(prob / 100.0)
         
         # Gegenüberstellung der integrierten Daten
