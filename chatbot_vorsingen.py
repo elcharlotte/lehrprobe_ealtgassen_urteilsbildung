@@ -10,53 +10,22 @@ def reset_app():
         del st.session_state[key]
     st.rerun()
 
-# --- COGNITIVE TASK HELPERS ---
-def check_cognitive_answer():
-    if st.session_state.cognitive_answer == "Option 4":
-        st.session_state.cognitive_score = 100
-        st.session_state.cognitive_feedback = "Korrekt! Logische Schlussfolgerung richtig."
-    else:
-        st.session_state.cognitive_score = 0
-        st.session_state.cognitive_feedback = "Falsch. Logische Schlussfolgerung nicht korrekt."
-    st.session_state.step = "abi_grade"
-    st.rerun()
-
 # --- MAIN APP ---
 def main():
     st.set_page_config(page_title="SEK-Auswahl Diagnostik-Demo", page_icon="👮‍♂️", layout="centered")
     
     # Initialisierung der Zustände
     if "step" not in st.session_state:
-        st.session_state.step = "cognitive_task" # Startet jetzt mit kognitiver Aufgabe
+        st.session_state.step = "abi_grade"  # Startet direkt mit der Abiturnote
         st.session_state.messages = []
         st.session_state.abi_score = 2.0      # Standardwert für Abi-Note
         st.session_state.self_score = 3       # Standardwert für Fragebogen
-        st.session_state.cognitive_score = None # Score für kognitive Aufgabe
-        st.session_state.cognitive_feedback = ""
 
-    # --- PHASE 1: KOGNITIVE AUFGABE ---
-    if st.session_state.step == "cognitive_task":
-        st.title("Schritt 1: Kognitive Leistungsfähigkeit 🧠")
-        st.write("Bitte lösen Sie die folgende logische Aufgabe schnell und präzise:")
-        st.markdown("""
-        **Welches Symbol vervollständigt die Reihe logisch?**
-        
-        [□ | ○ | △]  →  [○ | △ | □]  →  [△ | □ | ? ]
-        
-        """)
-        
-        # Simulierte Antwortoptionen
-        options = ["Option 1: □", "Option 2: △", "Option 3: ◊", "Option 4: ○"]
-        st.radio("Ihre Antwort:", options, key="cognitive_answer")
-        
-        # Button ruft die Check-Funktion auf, die den Score setzt und zum nächsten Schritt springt
-        st.button("Antwort abgeben & weiter 🚀", on_click=check_cognitive_answer, use_container_width=True)
-
-    # --- PHASE 2: ABITURNOTE ---
-    elif st.session_state.step == "abi_grade":
-        st.title("Schritt 2: Schulische Leistung (Abiturnote) 🎓")
+    # --- PHASE 1: ABITURNOTE ---
+    if st.session_state.step == "abi_grade":
+        st.title("Schritt 1: Schulische Leistung (Abiturnote) 🎓")
         st.write("Bitte geben Sie Ihre Abschlussnote des Abiturs an:")
-        st.info("Hinweis: Eine gute Abiturnote korreliert oft mit kognitiver Grundfähigkeit, aber für SEK-Einsätze sind andere Faktoren oft wichtiger.")
+        st.info("Hinweis: Eine gute Abiturnote korreliert oft mit kognitiver Grundfähigkeit, aber für SEK-Einsätze sind andere Faktoren meist ausschlaggebender.")
         
         st.session_state.abi_score = st.number_input(
             "Abiturnote (z.B. 1.0 bis 4.0):",
@@ -71,9 +40,9 @@ def main():
             st.session_state.step = "questionnaire"
             st.rerun()
 
-    # --- PHASE 3: FRAGEBOGEN (1 ITEM) ---
+    # --- PHASE 2: FRAGEBOGEN (1 ITEM) ---
     elif st.session_state.step == "questionnaire":
-        st.title("Schritt 3: Persönlichkeits-Fragebogen 🛡️")
+        st.title("Schritt 2: Persönlichkeits-Fragebogen 🛡️")
         st.write("Bitte geben Sie an, wie sehr Sie der folgenden Aussage zustimmen:")
         
         st.session_state.self_score = st.select_slider(
@@ -85,52 +54,47 @@ def main():
         
         if st.button("Weiter zum Kurz-Interview 🎤", use_container_width=True):
             st.session_state.step = "chat"
+            # Das System-Setting und die erste (und einzige) Frage werden gesetzt
             st.session_state.messages = [
                 {
                     "role": "system", 
-                    "content": "Du bist ein psychologischer Diagnostiker für eine Polizeispezialeinheit (SEK). Du interviewst einen Bewerber kurz zum Thema Stressresistenz und Teamfähigkeit unter Extrembedingungen. Stelle prägnante, direkte, bohrende Fragen. Halte dich kurz."
+                    "content": "Du bist ein psychologischer Diagnostiker für eine Polizeispezialeinheit (SEK). Du interviewst einen Bewerber kurz zum Thema Stressresistenz unter Extrembedingungen. Halte dich extrem kurz."
                 },
                 {
                     "role": "assistant", 
-                    "content": "Willkommen zum Mini-Interview. Erzählen Sie mir von einer Situation, in der Sie physisch oder psychisch an Ihre absoluten Grenzen gestoßen sind. Wie haben Sie reagiert und was haben Sie daraus gelernt?"
+                    "content": "Willkommen zum Mini-Interview. Erzählen Sie mir kurz von einer realen Situation, in der Sie physisch oder psychisch an Ihre absoluten Grenzen gestoßen sind. Wie genau haben Sie reagiert?"
                 }
             ]
             st.rerun()
 
-    # --- PHASE 4: SHORT CHAT (MAX 2 INTERAKTIONEN) ---
+    # --- PHASE 3: SHORT CHAT (EXAKT 1 INTERAKTION) ---
     elif st.session_state.step == "chat":
-        st.title("Schritt 4: Interview 💬")
+        st.title("Schritt 3: Interview 💬")
+        st.write("Bitte beantworten Sie die Frage des Diagnostikers:")
         
+        # Zähle die echten User-Antworten
         user_msgs_count = len([m for m in st.session_state.messages if m["role"] == "user"])
-        st.progress(user_msgs_count / 2, text=f"Fortschritt: Frage {user_msgs_count} von 2")
         
+        # Chat-Verlauf anzeigen
         for msg in st.session_state.messages:
             if msg["role"] != "system":
                 with st.chat_message(msg["role"]):
                     st.markdown(msg["content"])
 
-        if user_msgs_count >= 2:
-            st.success("Das Interview ist beendet.")
+        # Wenn der User geantwortet hat, ist das Interview sofort beendet
+        if user_msgs_count >= 1:
+            st.success("Das Interview ist beendet. Ihre Antwort wurde aufgezeichnet.")
             if st.button("Mechanische Urteilsbildung starten 📊", type="primary", use_container_width=True):
                 st.session_state.step = "results"
                 st.rerun()
         else:
             if prompt := st.chat_input("Ihre Antwort eingeben..."):
                 st.session_state.messages.append({"role": "user", "content": prompt})
-                
-                if user_msgs_count == 0:
-                    client = OpenAI(api_key=st.secrets["openai"]["api_key"])
-                    response = client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=st.session_state.messages
-                    )
-                    st.session_state.messages.append({"role": "assistant", "content": response.choices[0].message.content})
-                
                 st.rerun()
 
-    # --- PHASE 5: AUSWERTUNG & INTEGRATION ---
+    # --- PHASE 4: AUSWERTUNG & INTEGRATION ---
     elif st.session_state.step == "results":
-        st.title("Schritt 5: Diagnostisches Urteil 🧠📊")
+        st.title("Schritt 4: Diagnostisches Urteil 🧠📊")
         
         if "ai_verdict" not in st.session_state:
             with st.spinner("Der diagnostische Algorithmus verrechnet die Daten..."):
@@ -138,25 +102,23 @@ def main():
                     client = OpenAI(api_key=st.secrets["openai"]["api_key"])
                     chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages if m["role"] != "system"])
                     
-                    # Neuer Prompt, der alle 4 Datenquellen verrechnet
+                    # Der Prompt verrechnet nun die 3 verbleibenden Datenquellen
                     prompt_integration = f"""
                     Du bist ein hochentwickelter diagnostischer Algorithmus zur Verrechnung multimethodaler Daten für das Auswahlverfahren einer Polizeispezialeinheit (SEK).
-                    Dir liegen vier unterschiedliche Datenquellen vor:
-                    1. Kognitive Basisleistung (Logik-Test, Score 0-100): {st.session_state.cognitive_score} ({st.session_state.cognitive_feedback})
-                    2. Schulische Leistung (Abiturnote, wobei 1.0 am besten ist): {st.session_state.abi_score}
-                    3. Selbstbericht Stressresistenz (Skala 1-5, wobei 5 extrem hoch ist): {st.session_state.self_score}
-                    4. Transkribiertes Kurz-Interview (fokussiert auf Extrembelastung):
+                    Dir liegen drei unterschiedliche Datenquellen vor:
+                    1. Schulische Leistung (Abiturnote, wobei 1.0 am besten ist): {st.session_state.abi_score}
+                    2. Selbstbericht Stressresistenz (Skala 1-5, wobei 5 extrem hoch ist): {st.session_state.self_score}
+                    3. Das transkribierte Kurz-Interview (Nutzerantwort auf die Frage nach Grenzerfahrung):
                     {chat_text}
                     
                     Deine Aufgabe ist die mechanische Urteilsbildung (Prognose). Schätze die Wahrscheinlichkeit (0-100%) ein, mit der diese Person die **physischen und psychischen Extrembelastungen der SEK-Basisausbildung erfolgreich bewältigt**.
-                    Beachte die Gewichtung: Für den SEK-Dienst sind physische Robustheit, psychische Stabilität und Teamfähigkeit (aus Interview und Selbstbericht ableitbar) oft wichtiger als rein akademische Leistung (Abiturnote). Die kognitive Grundleistung ist ein notwendiges Fundament.
+                    Beachte die Gewichtung: Für den SEK-Dienst sind psychische Stabilität und die im Interview gezeigte Reflexion/Verhalten in Krisen extrem wichtig. Die Abiturnote fließt als Indikator für kognitive Disziplin ein, wird aber gegenüber der Stressresistenz geringer gewichtet.
                     
-                    Gib die Antwort AUSSCHLIESSLICH als valides JSON-Objekt mit exakt diesen fünf Keys aus:
+                    Gib die Antwort AUSSCHLIESSLICH als valides JSON-Objekt mit exakt diesen vier Keys aus:
                     "prognose_prozent": (Als Integer, z.B. 75),
-                    "begruendung_kognition": (Ein kurzer Satz, wie das Logik-Testergebnis einfließt),
-                    "begruendung_abinote": (Ein kurzer Satz, wie die Abiturnote einfließt, ggf. Relativierung),
+                    "begruendung_abinote": (Ein kurzer Satz, wie die Abiturnote einfließt),
                     "begruendung_selbstbericht": (Ein kurzer Satz, wie der Selbstbericht zur Stressresistenz einfließt),
-                    "begruendung_interview": (Ein kurzer Satz, welches Sprachmuster/Erlebnis im Interview ausschlaggebend war)
+                    "begruendung_interview": (Ein kurzer Satz, wie die Antwort im Interview bewertet wurde)
                     """
                     
                     res = client.chat.completions.create(
@@ -169,7 +131,6 @@ def main():
                     st.error(f"Fehler bei der Berechnung: {e}")
                     st.session_state.ai_verdict = {
                         "prognose_prozent": 50, 
-                        "begruendung_kognition": "Fehler",
                         "begruendung_abinote": "Fehler bei der Berechnung",
                         "begruendung_selbstbericht": "Fehler", 
                         "begruendung_interview": "Fehler"
@@ -181,35 +142,28 @@ def main():
         
         st.markdown(f"### Eignungsprognose:")
         st.markdown(f"#### Wahrscheinlichkeit, die SEK-Basisausbildung erfolgreich zu bewältigen: **{prob}%**")
-        
-        # Farbe des Fortschrittsbalkens je nach Eignung
-        bar_color = "green" if prob >= 70 else "orange" if prob >= 40 else "red"
         st.progress(prob / 100.0)
         
         if prob < 40:
-            st.warning("⚠️ Aufgrund der vorliegenden Daten wird eine Eignung aktuell als gering eingeschätzt.")
+            st.warning("⚠️ Geringe Eignung: Die Kombination aus den vorliegenden Daten deutet auf ein erhöhtes Risiko bei Extrembelastungen hin.")
         elif prob < 70:
-            st.info("ℹ️ Eine Eignung ist gegeben, aber es zeigen sich deutliche Entwicklungsfelder.")
+            st.info("ℹ️ Bedingte Eignung: Grundvoraussetzungen sind erfüllt, es zeigen sich jedoch kritische Faktoren in der Stressbewältigung.")
         else:
-            st.success("✅ Hohe Eignung für die Extrembelastungen der SEK-Ausbildung.")
+            st.success("✅ Hohe Eignung: Das Profil zeigt eine überdurchschnittliche Passung für die psychischen Anforderungen der Spezialkräfte.")
             
-        # Gegenüberstellung der integrierten Daten
+        # Gegenüberstellung der integrierten Daten (Zurück auf 3 Spalten)
         st.divider()
         st.subheader("Verrechnete Informationen aus der diagnostischen Black Box:")
         
-        # Layout angepasst auf 4 Spalten
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric(label="Logik-Score", value=f"{st.session_state.cognitive_score}%")
-            st.caption(v.get("begruendung_kognition", ""))
-        with col2:
             st.metric(label="Abiturnote", value=f"{st.session_state.abi_score}")
             st.caption(v.get("begruendung_abinote", ""))
-        with col3:
+        with col2:
             st.metric(label="Selbstbericht Stress", value=f"{st.session_state.self_score} / 5")
             st.caption(v.get("begruendung_selbstbericht", ""))
-        with col4:
-            st.metric(label="Interviewdaten", value="Text-Muster")
+        with col3:
+            st.metric(label="Interview-Antwort", value="Text-Muster")
             st.caption(v.get("begruendung_interview", ""))
             
         st.divider()
