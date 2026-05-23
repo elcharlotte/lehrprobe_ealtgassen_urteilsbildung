@@ -140,7 +140,7 @@ def main():
         v = st.session_state.ai_verdict
         prob = v.get("prognose_prozent", 50)
         
-        st.markdown(f"### Eignungsprognose:")
+        st.markdown(f"### Prognose:")
         st.markdown(f"#### Wahrscheinlichkeit, die SEK-Basisausbildung erfolgreich zu bewältigen: **{prob}%**")
         st.progress(prob / 100.0)
         
@@ -153,7 +153,7 @@ def main():
             
         # Gegenüberstellung der integrierten Daten (Zurück auf 3 Spalten)
         st.divider()
-        st.subheader("Verrechnete Informationen aus der diagnostischen Black Box:")
+        st.subheader("Verrechnete Informationen:")
         
         col1, col2, col3 = st.columns(3)
         with col1:
