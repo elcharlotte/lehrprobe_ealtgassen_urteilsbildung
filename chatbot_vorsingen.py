@@ -25,7 +25,7 @@ def main():
     if st.session_state.step == "abi_grade":
         st.title("Schritt 1: Schulische Leistung (Abiturnote) 🎓")
         st.write("Bitte geben Sie Ihre Abschlussnote des Abiturs an:")
-        st.info("Hinweis: Eine gute Abiturnote korreliert oft mit kognitiver Grundfähigkeit, aber für SEK-Einsätze sind andere Faktoren meist ausschlaggebender.")
+        # st.info("Hinweis: Eine gute Abiturnote korreliert oft mit kognitiver Grundfähigkeit, aber für SEK-Einsätze sind andere Faktoren meist ausschlaggebender.")
         
         st.session_state.abi_score = st.number_input(
             "Abiturnote (z.B. 1.0 bis 4.0):",
@@ -62,7 +62,7 @@ def main():
                 },
                 {
                     "role": "assistant", 
-                    "content": "Willkommen zum Mini-Interview. Erzählen Sie mir kurz von einer realen Situation, in der Sie physisch oder psychisch an Ihre absoluten Grenzen gestoßen sind. Wie genau haben Sie reagiert?"
+                    "content": "Erzählen Sie mir kurz von einer realen Situation, in der Sie physisch oder psychisch an Ihre absoluten Grenzen gestoßen sind. Wie genau haben Sie reagiert?"
                 }
             ]
             st.rerun()
@@ -97,7 +97,7 @@ def main():
         st.title("Schritt 4: Diagnostisches Urteil 🧠📊")
         
         if "ai_verdict" not in st.session_state:
-            with st.spinner("Der diagnostische Algorithmus verrechnet die Daten..."):
+            with st.spinner("Das LLM verrechnet die Daten..."):
                 try:
                     client = OpenAI(api_key=st.secrets["openai"]["api_key"])
                     chat_text = "\n".join([f"{m['role']}: {m['content']}" for m in st.session_state.messages if m["role"] != "system"])
